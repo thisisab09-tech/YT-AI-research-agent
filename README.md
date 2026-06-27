@@ -31,12 +31,13 @@ The loop is capped at 8 steps so a confused model can never spin forever.
 
 Free quota: 10,000 units/day. A `search` call costs 100 units, `commentThreads` costs 1 unit — plenty for testing.
 
-### 2. Get a Groq API key (free)
+### 2. Get a Gemini API key (free)
 
-1. Go to https://console.groq.com/
-2. Sign up / log in.
-3. Go to **API Keys → Create API Key**.
-4. Copy the key.
+1. Go to https://aistudio.google.com/app/apikey
+2. Sign in with your normal Google account.
+3. Click **Create API key**.
+4. Copy the key (starts with `AIza...`).
+5. Recommended: on the same page, restrict the key to the Generative Language API.
 
 ### 3. Install and configure
 
@@ -63,9 +64,9 @@ Topic> Claude vs GPT-4
 ## Tech used
 
 - **Language:** Python
-- **LLM:** Groq, `llama-3.3-70b-versatile` (free tier, native function/tool calling)
+- **LLM:** Gemini, `gemini-2.5-flash` (free tier, native function calling)
 - **APIs:** YouTube Data API v3 (`/search`, `/videos`, `/commentThreads`)
-- **No agent framework** — `agent.py` hand-rolls the loop using Groq's native tool-calling response format (the model returns structured `tool_calls`, which we dispatch via a plain Python dict lookup).
+- **No agent framework** — `agent.py` hand-rolls the loop using Gemini's native function-calling response format (the model returns structured `function_call` parts, which we dispatch via a plain Python dict lookup). Automatic Function Calling is explicitly disabled so the loop, state tracking, and exit conditions are all owned by our own code, not the SDK.
 
 ## Project structure
 
@@ -88,9 +89,10 @@ Groq for the next-step decision.
   10 of what the API handed back," not "top 10 of all comments on the video."
 - **No persistent memory across runs.** Each topic is a fresh conversation;
   there's no chat history or caching between sessions.
-- **Single LLM provider.** Only tested against Groq's Llama 3.3 70B. Swapping
-  providers would mean updating the tool-call schema format in `agent.py`
-  (OpenAI/Gemini have slightly different tool-calling response shapes).
+- **Single LLM provider.** Only tested against Gemini's `gemini-2.5-flash`. Swapping
+  providers would mean updating the function-calling schema/response handling
+  in `agent.py` (OpenAI/Groq use a different tool-calling response shape:
+  `choices[0].message.tool_calls` vs Gemini's `candidates[0].content.parts[].function_call`).
 - **No automatic retries.** API failures are caught and surfaced as an
   `{"error": ...}` tool result so the LLM can see and react to them, but
   there's no exponential-backoff retry layer.

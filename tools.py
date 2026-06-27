@@ -10,20 +10,20 @@ The three tools the agent can call. Each tool:
 
 No agent-framework code lives here. This file knows nothing about the
 LLM or the loop — it just wraps two YouTube Data API v3 endpoints and
-one Groq chat completion call.
+one Gemini generate_content call.
 """
 
 import os
 import requests
-from groq import Groq
+from google import genai
 
 YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 YOUTUBE_COMMENTS_URL = "https://www.googleapis.com/youtube/v3/commentThreads"
 
-_groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+_gemini_client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 
 def search_youtube(query: str) -> dict:
@@ -182,7 +182,7 @@ def summarize_findings(topic: str, videos: list, comments_by_video: dict) -> dic
     """
     Tool 3: summarize_findings(videos, comments)
 
-    An LLM call (Groq) with a structured prompt. This is the only tool
+    An LLM call (Gemini) with a structured prompt. This is the only tool
     that talks to the LLM for *content generation* — separate from the
     LLM call the agent loop uses to *decide which tool to call next*.
 
@@ -200,8 +200,8 @@ def summarize_findings(topic: str, videos: list, comments_by_video: dict) -> dic
         return {"brief": f"No YouTube videos were found for '{topic}'. "
                           f"Try a broader or differently-worded query."}
 
-    if not _groq_client:
-        return {"error": "GROQ_API_KEY is not set."}
+    if not _gemini_client:
+        return {"error": "GEMINI_API_KEY is not set."}
 
     # Build a compact, structured context block for the LLM rather than
     # dumping raw JSON — keeps the prompt token-efficient and readable.
@@ -229,17 +229,15 @@ def summarize_findings(topic: str, videos: list, comments_by_video: dict) -> dic
     )
 
     try:
-        completion = _groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": context},
-            ],
-            temperature=0.4,
-            max_tokens=500,
+        response = _gemini_client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"{system_prompt}\n\n{context}",
         )
-        brief = completion.choices[0].message.content.strip()
+        brief = (response.text or "").strip()
+        if not brief:
+            return {"error": "Gemini returned an empty response for summarize_findings."}
         return {"brief": brief}
 
     except Exception as e:
         return {"error": f"Unexpected error in summarize_findings: {e}"}
+

@@ -22,7 +22,7 @@ def main():
 
     # Fail fast with a clear message if keys are missing, rather than
     # letting the agent loop fail confusingly several steps in.
-    missing = [k for k in ("YOUTUBE_API_KEY", "GROQ_API_KEY") if not os.environ.get(k)]
+    missing = [k for k in ("YOUTUBE_API_KEY", "GEMINI_API_KEY") if not os.environ.get(k)]
     if missing:
         print(f"Missing environment variable(s): {', '.join(missing)}")
         print("Add them to a .env file (see .env.example) before running.\n")
