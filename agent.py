@@ -39,7 +39,7 @@ from google.genai import types
 from tools import search_youtube, get_video_comments, summarize_findings
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-MODEL = "gemini-2.5-flash"
+MODEL = "MODEL = "gemini-2.5-flash-lite""
 MAX_STEPS = 8  # hard ceiling -> guarantees the loop terminates
 
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
