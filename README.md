@@ -11,7 +11,7 @@ in `agent.py`.
 ## How it works (high level)
 
 1. User enters a topic.
-2. The LLM (Groq, Llama 3.3 70B) decides to call `search_youtube`.
+2. 2. The LLM (Gemini, `gemini-2.5-flash`) decides to call `search_youtube`.
 3. The LLM picks 2–3 relevant videos from the results.
 4. The LLM calls `get_video_comments` for each chosen video.
 5. The LLM calls `summarize_findings`, which triggers one final LLM call
@@ -79,7 +79,7 @@ main.py     — CLI entry point
 Agent logic and tool logic are intentionally separate files: `tools.py` knows
 nothing about the LLM-decision loop, and `agent.py` contains no direct
 `requests` calls to YouTube — it only talks to `tools.py`'s functions and to
-Groq for the next-step decision.
+Gemini for the next-step decision.
 
 ## Known limitations
 
