@@ -230,7 +230,7 @@ def summarize_findings(topic: str, videos: list, comments_by_video: dict) -> dic
 
     try:
         response = _gemini_client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-flash-lite",
             contents=f"{system_prompt}\n\n{context}",
         )
         brief = (response.text or "").strip()
