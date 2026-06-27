@@ -11,7 +11,7 @@ in `agent.py`.
 ## How it works (high level)
 
 1. User enters a topic.
-2. 2. The LLM (Gemini, `gemini-2.5-flash`) decides to call `search_youtube`.
+2. 2. The LLM (Gemini, `gemini-2.5-flash-lite`) decides to call `search_youtube`.
 3. The LLM picks 2–3 relevant videos from the results.
 4. The LLM calls `get_video_comments` for each chosen video.
 5. The LLM calls `summarize_findings`, which triggers one final LLM call
@@ -64,7 +64,7 @@ Topic> Claude vs GPT-4
 ## Tech used
 
 - **Language:** Python
-- **LLM:** Gemini, `gemini-2.5-flash` (free tier, native function calling)
+- **LLM:** Gemini, `gemini-2.5-flash-lite` (free tier, native function calling)
 - **APIs:** YouTube Data API v3 (`/search`, `/videos`, `/commentThreads`)
 - **No agent framework** — `agent.py` hand-rolls the loop using Gemini's native function-calling response format (the model returns structured `function_call` parts, which we dispatch via a plain Python dict lookup). Automatic Function Calling is explicitly disabled so the loop, state tracking, and exit conditions are all owned by our own code, not the SDK.
 
@@ -89,7 +89,7 @@ Gemini for the next-step decision.
   10 of what the API handed back," not "top 10 of all comments on the video."
 - **No persistent memory across runs.** Each topic is a fresh conversation;
   there's no chat history or caching between sessions.
-- **Single LLM provider.** Only tested against Gemini's `gemini-2.5-flash`. Swapping
+- **Single LLM provider.** Only tested against Gemini's `gemini-2.5-flash-lite`. Swapping
   providers would mean updating the function-calling schema/response handling
   in `agent.py` (OpenAI/Groq use a different tool-calling response shape:
   `choices[0].message.tool_calls` vs Gemini's `candidates[0].content.parts[].function_call`).
